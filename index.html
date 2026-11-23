@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FMD: window fan teardown</title>
+<meta name="description" content="FMD entry. We are taking apart a twin window fan. Disassembly and analysis in progress.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shantell+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #edf2df;
+    --grid: #cfdfc2;
+    --grid-strong: #a9c397;
+    --ink: #2f333a;
+    --blue: #2e62b8;
+    --red: #cf4a32;
+    --loop: 16s;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    color: var(--ink);
+    font-family: "Shantell Sans", "Comic Neue", "Bradley Hand", "Comic Sans MS", cursive;
+    background-color: var(--paper);
+    /* engineering pad: fine squares with a heavier line every fifth */
+    background-image:
+      linear-gradient(var(--grid-strong) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-strong) 1px, transparent 1px),
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+    background-position: -1px -1px;
+  }
+
+  main {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px 16px 56px;
+  }
+
+  /* the title block that runs across the top of a pad sheet */
+  .titleblock {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: 2px solid var(--grid-strong);
+    background: var(--paper);
+    font-size: 1.05rem;
+    line-height: 1.2;
+  }
+  .titleblock li { padding: 9px 14px; }
+  .titleblock li + li { border-left: 2px solid var(--grid-strong); }
+  .titleblock li:first-child { font-weight: 800; letter-spacing: 0.04em; }
+
+  .sketch {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 66vh;
+    margin: 6px auto 0;
+    overflow: visible;
+  }
+
+  h1 {
+    margin: 18px 0 0;
+    text-align: center;
+    font-size: clamp(1.85rem, 5.4vw, 3.4rem);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  .dots { white-space: nowrap; }
+  .dots i {
+    display: inline-block;
+    font-style: normal;
+    animation: hop 1.2s steps(3, end) infinite;
+  }
+  .dots i:nth-child(2) { animation-delay: 0.15s; }
+  .dots i:nth-child(3) { animation-delay: 0.3s; }
+
+  .scribble {
+    display: block;
+    width: min(420px, 70%);
+    height: 18px;
+    margin: 6px auto 0;
+    overflow: visible;
+  }
+
+  .note {
+    max-width: 36ch;
+    margin: 18px auto 0;
+    text-align: center;
+    font-size: clamp(1.1rem, 2.4vw, 1.35rem);
+    line-height: 1.45;
+    text-wrap: pretty;
+  }
+
+  /* ---------- the drawing ---------- */
+  .ink * { vector-effect: non-scaling-stroke; }
+  .line, .thin, .red, .blue {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .line  { stroke: var(--ink); stroke-width: 3; }
+  .thin  { stroke: var(--ink); stroke-width: 1.5; opacity: 0.55; }
+  .ghost { opacity: 0.4; }
+  .red   { stroke: var(--red); stroke-width: 2.6; }
+  .blue  { stroke: var(--blue); stroke-width: 2.6; }
+  .solid { fill: var(--paper); }
+  .dot   { fill: var(--ink); stroke: none; }
+  .ink text {
+    font-family: inherit;
+    font-size: 30px;
+    font-weight: 600;
+    fill: var(--red);
+  }
+  .ink text.q { fill: var(--blue); font-size: 36px; font-weight: 800; }
+
+  .rotor, .grille, .body, .screw, .driver, .twist, .pupil,
+  .smile, .gasp, .wind, .guides, .n1, .n2, .n3, .n4 {
+    transform-origin: 0 0;
+    animation-duration: var(--loop);
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+  }
+
+  .rotor  { animation-name: spin; }
+  .grille { animation-name: lift; }
+  .body   { animation-name: drop; }
+  .screw  { animation-name: pop; }
+  .driver { animation-name: visit; opacity: 0; transform: translate(520px, 420px); }
+  .twist  { animation: twist 0.36s steps(2, end) infinite alternate; transform-origin: 0 0; }
+  .pupil  { animation-name: look; }
+  .smile  { animation-name: smile; }
+  .gasp   { animation-name: gasp; opacity: 0; }
+  .wind   { animation-name: wind; opacity: 0; }
+  .guides { animation-name: guides; opacity: 0; }
+  .n1, .n2, .n3, .n4 { opacity: 0; }
+  .n1 { animation-name: n1; }
+  .n2 { animation-name: n2; }
+  .n3 { animation-name: n3; }
+  .n4 { animation-name: n4; }
+  path.n1, path.n2, path.n3, path.n4 { stroke-dasharray: 1; }
+
+  /* running, coast to a stop, stay put while it is in pieces, spin back up */
+  @keyframes spin {
+    0%   { transform: rotate(0deg); animation-timing-function: linear; }
+    12%  { transform: rotate(900deg); animation-timing-function: cubic-bezier(.2, .6, .4, 1); }
+    18%  { transform: rotate(1080deg); }
+    97%  { transform: rotate(1080deg); animation-timing-function: ease-in; }
+    100% { transform: rotate(1140deg); }
+  }
+  @keyframes lift {
+    0%, 40%   { transform: translate(0, 0) rotate(0deg); }
+    46%       { transform: translate(0, -166px) rotate(-2.5deg); }
+    48%, 77%  { transform: translate(0, -155px) rotate(-1.5deg); }
+    83%, 100% { transform: translate(0, 0) rotate(0deg); }
+  }
+  @keyframes drop {
+    0%, 40%   { transform: translate(0, 0); }
+    46%       { transform: translate(0, 162px); }
+    48%, 77%  { transform: translate(0, 155px); }
+    83%, 100% { transform: translate(0, 0); }
+  }
+  @keyframes pop {
+    0%, 23%   { transform: translate(0, 0) rotate(0deg); animation-timing-function: ease-out; }
+    24.5%     { transform: translate(calc(var(--dx) * .5), -80px) rotate(200deg); animation-timing-function: ease-in; }
+    26%, 84%  { transform: translate(var(--dx), var(--dy)) rotate(380deg); animation-timing-function: ease-out; }
+    85.5%     { transform: translate(calc(var(--dx) * .5), -80px) rotate(180deg); animation-timing-function: ease-in; }
+    87%, 100% { transform: translate(0, 0) rotate(0deg); }
+  }
+  @keyframes visit {
+    0%, 18%   { transform: translate(520px, 420px); opacity: 0; }
+    21%, 24%  { transform: translate(-175px, 105px); opacity: 1; }
+    25%, 28%  { transform: translate(-55px, 105px); opacity: 1; }
+    29%, 32%  { transform: translate(65px, 105px); opacity: 1; }
+    33%, 36%  { transform: translate(185px, 105px); opacity: 1; }
+    40%, 100% { transform: translate(520px, 420px); opacity: 0; }
+  }
+  @keyframes twist {
+    from { transform: rotate(-7deg); }
+    to   { transform: rotate(7deg); }
+  }
+  @keyframes look {
+    0%, 18%   { transform: translate(0, 0); }
+    21%       { transform: translate(-3px, 6px); }
+    36%       { transform: translate(4px, 6px); }
+    42%, 77%  { transform: translate(0, -7px); }
+    83%, 100% { transform: translate(0, 0); }
+  }
+  @keyframes smile {
+    0%, 20%   { opacity: 1; }
+    20.1%, 86.9% { opacity: 0; }
+    87%, 100% { opacity: 1; }
+  }
+  @keyframes gasp {
+    0%, 20%   { opacity: 0; }
+    20.1%, 86.9% { opacity: 1; }
+    87%, 100% { opacity: 0; }
+  }
+  @keyframes wind {
+    0%        { opacity: 0; transform: translate(0, 12px); }
+    3%        { opacity: 1; }
+    12%       { opacity: 1; transform: translate(0, -12px); }
+    15%, 100% { opacity: 0; transform: translate(0, -18px); }
+  }
+  @keyframes guides {
+    0%, 47%   { opacity: 0; }
+    50%, 74%  { opacity: 1; }
+    77%, 100% { opacity: 0; }
+  }
+  @keyframes n1 {
+    0%, 50%   { opacity: 0; stroke-dashoffset: 1; }
+    50.5%     { opacity: 1; stroke-dashoffset: 1; }
+    54%, 74%  { opacity: 1; stroke-dashoffset: 0; }
+    77%, 100% { opacity: 0; stroke-dashoffset: 0; }
+  }
+  @keyframes n2 {
+    0%, 55%   { opacity: 0; stroke-dashoffset: 1; }
+    55.5%     { opacity: 1; stroke-dashoffset: 1; }
+    59%, 74%  { opacity: 1; stroke-dashoffset: 0; }
+    77%, 100% { opacity: 0; stroke-dashoffset: 0; }
+  }
+  @keyframes n3 {
+    0%, 60%   { opacity: 0; stroke-dashoffset: 1; }
+    60.5%     { opacity: 1; stroke-dashoffset: 1; }
+    64%, 74%  { opacity: 1; stroke-dashoffset: 0; }
+    77%, 100% { opacity: 0; stroke-dashoffset: 0; }
+  }
+  @keyframes n4 {
+    0%, 65%   { opacity: 0; stroke-dashoffset: 1; }
+    65.5%     { opacity: 1; stroke-dashoffset: 1; }
+    69%, 74%  { opacity: 1; stroke-dashoffset: 0; }
+    77%, 100% { opacity: 0; stroke-dashoffset: 0; }
+  }
+  @keyframes hop {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-0.28em); }
+  }
+
+  @media (max-width: 520px) {
+    main { padding: 12px 12px 40px; }
+    .titleblock { font-size: 0.92rem; }
+    .titleblock li { padding: 8px 9px; }
+    .ink text { font-size: 34px; }
+    .ink text.q { font-size: 40px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <ul class="titleblock" aria-label="Sheet details">
+    <li>FMD</li>
+    <li>twin window fan</li>
+    <li>sheet 1 of ?</li>
+  </ul>
+
+  <svg class="sketch" viewBox="0 30 1000 665" role="img" aria-labelledby="sketch-title sketch-desc">
+    <title id="sketch-title">Sketch of a twin window fan being taken apart</title>
+    <desc id="sketch-desc">A hand-drawn fan with two rotors spins, a screwdriver takes out four screws, the front grille lifts off, and notes point at the grille, the blades and the motor.</desc>
+    <defs>
+      <filter id="boil" filterUnits="userSpaceOnUse" x="-20" y="-20" width="1040" height="740">
+        <feTurbulence id="boil-noise" type="fractalNoise" baseFrequency="0.028" numOctaves="2" seed="3" result="noise"/>
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="7" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+      <path id="blade" d="M-7,-24 C-36,-44 -30,-88 -2,-92 C24,-94 32,-58 13,-22 Z"/>
+      <g id="rotor-art">
+        <use href="#blade"/>
+        <use href="#blade" transform="rotate(60)"/>
+        <use href="#blade" transform="rotate(120)"/>
+        <use href="#blade" transform="rotate(180)"/>
+        <use href="#blade" transform="rotate(240)"/>
+        <use href="#blade" transform="rotate(300)"/>
+      </g>
+      <g id="screw-art">
+        <circle r="7" class="red solid"/>
+        <path class="red" d="M-3.5,-3.5 L3.5,3.5 M3.5,-3.5 L-3.5,3.5"/>
+      </g>
+    </defs>
+
+    <g class="ink" filter="url(#boil)">
+      <g transform="translate(500 350)">
+
+        <!-- air coming off the fan while it runs -->
+        <g class="wind">
+          <path class="blue" d="M-196,-176 c8,-30 52,-34 56,-8 c2,18 -26,20 -26,4"/>
+          <path class="blue" d="M-24,-196 c8,-30 52,-34 56,-8 c2,18 -26,20 -26,4"/>
+          <path class="blue" d="M146,-176 c8,-30 52,-34 56,-8 c2,18 -26,20 -26,4"/>
+        </g>
+
+        <!-- back half: housing, rotors, cord -->
+        <g class="body">
+          <path class="line" d="M-6,115 C-12,162 -62,150 -122,164 C-190,180 -226,150 -256,170"/>
+          <g transform="translate(-262 172) rotate(-32)">
+            <rect class="line solid" x="-26" y="-9" width="26" height="18" rx="4"/>
+            <path class="line" d="M-26,-4 h-13 M-26,4 h-13"/>
+          </g>
+
+          <rect class="line solid" x="-292" y="-104" width="36" height="208" rx="4"/>
+          <path class="thin" d="M-283,-96 v192 M-274,-96 v192 M-265,-96 v192"/>
+          <rect class="line solid" x="256" y="-104" width="36" height="208" rx="4"/>
+          <path class="thin" d="M265,-96 v192 M274,-96 v192 M283,-96 v192"/>
+
+          <rect class="line solid" x="-258" y="-115" width="516" height="230" rx="20"/>
+          <rect class="line ghost" x="-258" y="-115" width="516" height="230" rx="20" transform="rotate(0.5) translate(2 -1)"/>
+
+          <g transform="translate(-128 0)">
+            <circle class="line" r="100"/>
+            <circle class="thin" r="78"/>
+            <circle class="thin" r="56"/>
+            <g class="rotor"><use href="#rotor-art" class="line solid"/></g>
+            <circle class="line solid" r="24"/>
+            <g class="pupil"><circle class="dot" cx="2" cy="2" r="9"/><circle cx="-1" cy="-1" r="3" fill="#edf2df"/></g>
+          </g>
+          <g transform="translate(128 0)">
+            <circle class="line" r="100"/>
+            <circle class="thin" r="78"/>
+            <circle class="thin" r="56"/>
+            <g transform="rotate(30)"><g class="rotor"><use href="#rotor-art" class="line solid"/></g></g>
+            <circle class="line solid" r="24"/>
+            <g class="pupil"><circle class="dot" cx="2" cy="2" r="9"/><circle cx="-1" cy="-1" r="3" fill="#edf2df"/></g>
+          </g>
+
+          <path class="line smile" d="M-18,64 Q0,84 18,64"/>
+          <ellipse class="line solid gasp" cx="0" cy="74" rx="8" ry="10"/>
+        </g>
+
+        <!-- dashed lines that tie the two halves together once they separate -->
+        <g class="guides">
+          <path class="thin" stroke-dasharray="7 9" d="M-232,-44 V40 M232,-44 V40"/>
+        </g>
+
+        <!-- front half: grille with the carry handle -->
+        <g class="grille">
+          <path class="line" d="M-52,-110 C-52,-152 52,-152 52,-110"/>
+          <path class="thin" d="M-33,-112 C-33,-138 33,-138 33,-112"/>
+          <rect class="line" x="-248" y="-110" width="496" height="220" rx="34"/>
+          <rect class="line ghost" x="-248" y="-110" width="496" height="220" rx="34" transform="rotate(-0.4) translate(-2 1)"/>
+          <path class="thin" d="M-238,-90 H238 M-244,-70 H244 M-246,-50 H246 M-246,-30 H246 M-246,-10 H246 M-246,10 H246 M-246,30 H246 M-246,50 H246 M-244,70 H244 M-238,90 H238"/>
+          <path class="thin" d="M-200,-108 V108 M-150,-108 V108 M-100,-108 V108 M-50,-108 V108 M0,-108 V108 M50,-108 V108 M100,-108 V108 M150,-108 V108 M200,-108 V108"/>
+          <rect class="line solid" x="-36" y="-102" width="72" height="24" rx="3" style="stroke-width:2"/>
+          <path class="thin" d="M-27,-94 h40 M-27,-86 h54"/>
+        </g>
+
+        <!-- the four screws that hold the grille on -->
+        <g transform="translate(-180 100)"><g class="screw" style="--dx:480px; --dy:216px"><use href="#screw-art"/></g></g>
+        <g transform="translate(-60 100)"><g class="screw" style="--dx:382px; --dy:222px; animation-delay:.64s"><use href="#screw-art"/></g></g>
+        <g transform="translate(60 100)"><g class="screw" style="--dx:286px; --dy:214px; animation-delay:1.28s"><use href="#screw-art"/></g></g>
+        <g transform="translate(180 100)"><g class="screw" style="--dx:188px; --dy:220px; animation-delay:1.92s"><use href="#screw-art"/></g></g>
+
+        <!-- screwdriver, tip at the group origin -->
+        <g class="driver">
+          <g class="twist">
+            <g transform="rotate(48) scale(1.35)">
+              <path class="line" d="M4,0 H72"/>
+              <rect class="red solid" x="72" y="-12" width="66" height="24" rx="11"/>
+              <path class="red" d="M88,-12 v24 M122,-12 v24"/>
+              <path class="thin" d="M96,-5 h18 M96,5 h18"/>
+            </g>
+          </g>
+        </g>
+
+        <!-- notes that get written once it is open -->
+        <text class="n1" x="-476" y="-214">grille</text>
+        <path class="red n1" pathLength="1" d="M-370,-228 C-344,-246 -300,-232 -262,-196 M-262,-196 l-17,-3 M-262,-196 l-3,-17"/>
+
+        <text class="n2" x="336" y="104">blades</text>
+        <path class="red n2" pathLength="1" d="M392,118 C392,160 310,186 214,170 M214,170 l14,-10 M214,170 l12,13"/>
+
+        <text class="n3" x="-486" y="166">motor?</text>
+        <path class="red n3" pathLength="1" d="M-354,158 C-320,128 -230,118 -158,146 M-158,146 l-16,-11 M-158,146 l-17,5"/>
+
+        <text class="q n4" x="-52" y="12">Q = ?</text>
+        <path class="blue n4" pathLength="1" d="M-128,40 c-12,-14 12,-26 0,-40 c-10,-12 8,-22 0,-36 M-128,-36 l-10,12 M-128,-36 l11,11 M128,40 c-12,-14 12,-26 0,-40 c-10,-12 8,-22 0,-36 M128,-36 l-10,12 M128,-36 l11,11"/>
+      </g>
+    </g>
+  </svg>
+
+  <h1>Disassembly and analysis in progress<span class="dots" aria-hidden="true"><i>.</i><i>.</i><i>.</i></span></h1>
+  <svg class="scribble" viewBox="0 0 420 18" aria-hidden="true" preserveAspectRatio="none">
+    <path d="M4,10 C40,2 70,16 110,8 C150,1 180,15 220,9 C262,3 300,15 340,8 C370,3 396,10 416,7" fill="none" stroke="#cf4a32" stroke-width="3" stroke-linecap="round" filter="url(#boil)"/>
+  </svg>
+
+  <p class="note">We are taking apart a window fan to see how it moves air. The write-up goes here once it is in pieces.</p>
+</main>
+
+<script>
+  // "Line boil": redraw the wobble a few times a second, the way a
+  // hand-drawn animation re-traces the same drawing on every frame.
+  (function () {
+    var noise = document.getElementById('boil-noise');
+    var still = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (!noise) return;
+    var seeds = [3, 11, 19, 27];
+    var i = 0;
+    setInterval(function () {
+      if (still.matches || document.hidden) return;
+      i = (i + 1) % seeds.length;
+      noise.setAttribute('seed', seeds[i]);
+    }, 150);
+  })();
+</script>
+</body>
+</html>
