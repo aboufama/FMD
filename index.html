@@ -3,19 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FMD: window fan teardown</title>
-<meta name="description" content="FMD entry. We are taking apart a twin window fan. Disassembly and analysis in progress.">
+<title>FMD: window fan teardown | Andre Boufama's portfolio</title>
+<meta name="description" content="FMD entry in Andre Boufama's portfolio. We are taking apart a twin window fan. Disassembly and analysis in progress.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Shantell+Sans:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --paper: #edf2df;
-    --grid: #cfdfc2;
-    --grid-strong: #a9c397;
-    --ink: #2f333a;
-    --blue: #2e62b8;
-    --red: #cf4a32;
+    --paper: #fafafa;
+    --ink: #2b2b2b;
     --loop: 16s;
   }
 
@@ -29,14 +25,6 @@
     color: var(--ink);
     font-family: "Shantell Sans", "Comic Neue", "Bradley Hand", "Comic Sans MS", cursive;
     background-color: var(--paper);
-    /* engineering pad: fine squares with a heavier line every fifth */
-    background-image:
-      linear-gradient(var(--grid-strong) 1px, transparent 1px),
-      linear-gradient(90deg, var(--grid-strong) 1px, transparent 1px),
-      linear-gradient(var(--grid) 1px, transparent 1px),
-      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-    background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
-    background-position: -1px -1px;
   }
 
   main {
@@ -45,21 +33,12 @@
     padding: 20px 16px 56px;
   }
 
-  /* the title block that runs across the top of a pad sheet */
-  .titleblock {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
+  .byline {
     margin: 0;
-    padding: 0;
-    list-style: none;
-    border: 2px solid var(--grid-strong);
-    background: var(--paper);
-    font-size: 1.05rem;
+    font-size: 1.1rem;
+    font-weight: 600;
     line-height: 1.2;
   }
-  .titleblock li { padding: 9px 14px; }
-  .titleblock li + li { border-left: 2px solid var(--grid-strong); }
-  .titleblock li:first-child { font-weight: 800; letter-spacing: 0.04em; }
 
   .sketch {
     display: block;
@@ -102,7 +81,7 @@
     text-align: center;
     font-size: clamp(1.1rem, 2.4vw, 1.35rem);
     line-height: 1.45;
-    text-wrap: pretty;
+    text-wrap: balance;
   }
 
   /* ---------- the drawing ---------- */
@@ -115,17 +94,17 @@
   .line  { stroke: var(--ink); stroke-width: 3; }
   .thin  { stroke: var(--ink); stroke-width: 1.5; opacity: 0.55; }
   .ghost { opacity: 0.4; }
-  .red   { stroke: var(--red); stroke-width: 2.6; }
-  .blue  { stroke: var(--blue); stroke-width: 2.6; }
+  .red   { stroke: var(--ink); stroke-width: 2.6; }
+  .blue  { stroke: var(--ink); stroke-width: 2.6; }
   .solid { fill: var(--paper); }
   .dot   { fill: var(--ink); stroke: none; }
   .ink text {
     font-family: inherit;
     font-size: 30px;
     font-weight: 600;
-    fill: var(--red);
+    fill: var(--ink);
   }
-  .ink text.q { fill: var(--blue); font-size: 36px; font-weight: 800; }
+  .ink text.q { fill: var(--ink); font-size: 36px; font-weight: 800; }
 
   .rotor, .grille, .body, .screw, .driver, .twist, .pupil,
   .smile, .gasp, .wind, .guides, .n1, .n2, .n3, .n4 {
@@ -251,8 +230,6 @@
 
   @media (max-width: 520px) {
     main { padding: 12px 12px 40px; }
-    .titleblock { font-size: 0.92rem; }
-    .titleblock li { padding: 8px 9px; }
     .ink text { font-size: 34px; }
     .ink text.q { font-size: 40px; }
   }
@@ -264,11 +241,7 @@
 </head>
 <body>
 <main>
-  <ul class="titleblock" aria-label="Sheet details">
-    <li>FMD</li>
-    <li>twin window fan</li>
-    <li>sheet 1 of ?</li>
-  </ul>
+  <p class="byline">Andre Boufama's portfolio</p>
 
   <svg class="sketch" viewBox="0 30 1000 665" role="img" aria-labelledby="sketch-title sketch-desc">
     <title id="sketch-title">Sketch of a twin window fan being taken apart</title>
@@ -325,7 +298,7 @@
             <circle class="thin" r="56"/>
             <g class="rotor"><use href="#rotor-art" class="line solid"/></g>
             <circle class="line solid" r="24"/>
-            <g class="pupil"><circle class="dot" cx="2" cy="2" r="9"/><circle cx="-1" cy="-1" r="3" fill="#edf2df"/></g>
+            <g class="pupil"><circle class="dot" cx="2" cy="2" r="9"/><circle cx="-1" cy="-1" r="3" fill="#fafafa"/></g>
           </g>
           <g transform="translate(128 0)">
             <circle class="line" r="100"/>
@@ -333,7 +306,7 @@
             <circle class="thin" r="56"/>
             <g transform="rotate(30)"><g class="rotor"><use href="#rotor-art" class="line solid"/></g></g>
             <circle class="line solid" r="24"/>
-            <g class="pupil"><circle class="dot" cx="2" cy="2" r="9"/><circle cx="-1" cy="-1" r="3" fill="#edf2df"/></g>
+            <g class="pupil"><circle class="dot" cx="2" cy="2" r="9"/><circle cx="-1" cy="-1" r="3" fill="#fafafa"/></g>
           </g>
 
           <path class="line smile" d="M-18,64 Q0,84 18,64"/>
@@ -393,10 +366,10 @@
 
   <h1>Disassembly and analysis in progress<span class="dots" aria-hidden="true"><i>.</i><i>.</i><i>.</i></span></h1>
   <svg class="scribble" viewBox="0 0 420 18" aria-hidden="true" preserveAspectRatio="none">
-    <path d="M4,10 C40,2 70,16 110,8 C150,1 180,15 220,9 C262,3 300,15 340,8 C370,3 396,10 416,7" fill="none" stroke="#cf4a32" stroke-width="3" stroke-linecap="round" filter="url(#boil)"/>
+    <path d="M4,10 C40,2 70,16 110,8 C150,1 180,15 220,9 C262,3 300,15 340,8 C370,3 396,10 416,7" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round" filter="url(#boil)"/>
   </svg>
 
-  <p class="note">We are taking apart a window fan to see how it moves air. The write-up goes here once it is in pieces.</p>
+  <p class="note">We are taking apart a window fan to see how it moves air.</p>
 </main>
 
 <script>
